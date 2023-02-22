@@ -1,6 +1,15 @@
 import React from "react"
+import { download } from "../assets"
+import { downloadImage } from "../utils"
 
-const Card = () => {
+interface ICardProps {
+  _id: string
+  name: string
+  prompt: string
+  photo: string
+}
+
+const Card: React.FC<any> = ({ _id, name, prompt, photo }) => {
   return (
     <>
       <div>Card</div>
