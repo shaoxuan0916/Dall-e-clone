@@ -4,17 +4,27 @@ import { preview } from "../assets"
 import { getRandomPropmt } from "../utils"
 import { FormField, Loader } from "../components"
 import { FormType } from "../type/FormType"
+import toast from "react-hot-toast"
 
 const CreatePost = () => {
   const navigate = useNavigate()
-  const [form, setForm] = useState<FormType>({
+  const [form, setForm] = useState<any>({
     name: "",
     prompt: "",
     photo: "",
   })
 
-  const [generatingImg, setGeneratingImg] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [generatingImg, setGeneratingImg] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false)
+
+  const handleChange = (e: any) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  const handleSurpriseMe = () => {
+    const randomPrompt = getRandomPropmt(form.prompt)
+    setForm({ ...form, prompt: randomPrompt })
+  }
 
   const generateImg = async () => {
     if (form.prompt) {
@@ -28,7 +38,10 @@ const CreatePost = () => {
           body: JSON.stringify({ prompt: form.prompt }),
         })
 
+        console.log("response", response)
+
         const data = await response.json()
+        console.log("data", data)
 
         setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` })
       } catch (error) {
@@ -53,10 +66,12 @@ const CreatePost = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(form),
+          body: JSON.stringify({ ...form }),
         })
 
+        // console.log("response", response)
         await response.json()
+        toast.success("Successfully Created!")
         navigate("/")
       } catch (error) {
         alert(error)
@@ -66,15 +81,6 @@ const CreatePost = () => {
     } else {
       alert("Please enter a prompt and generate an image")
     }
-  }
-
-  const handleChange = (e: any) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleSurpriseMe = () => {
-    const randomPrompt = getRandomPropmt(form.prompt)
-    setForm({ ...form, prompt: randomPrompt })
   }
 
   return (

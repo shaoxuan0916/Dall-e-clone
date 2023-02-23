@@ -13,13 +13,15 @@ const RenderCards = ({ data, title }: { data: any; title: string }) => {
 const Home = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [allPosts, setAllPosts] = useState<any>(null)
-  const [searchText, setSearchText] = useState<string | number>("")
+  const [searchText, setSearchText] = useState<string>("")
+  const [searchTimeout, setSearchTimeout] = useState<any>(null)
+  const [searchedResults, setSearchedResults] = useState<any>(null)
 
   const fetchPosts = async () => {
     setLoading(true)
 
     try {
-      const response = await fetch("http://localhost:8080/api/v1/posts", {
+      const response = await fetch("http://localhost:8080/api/v1/post", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -28,6 +30,8 @@ const Home = () => {
 
       if (response.ok) {
         const result = await response.json()
+
+        console.log("result", result)
         setAllPosts(result.data.reverse())
       }
     } catch (err) {
@@ -41,6 +45,22 @@ const Home = () => {
     fetchPosts()
   }, [])
 
+  const handleSearchChange = (e: any) => {
+    clearTimeout(searchTimeout)
+    setSearchText(e.target.value)
+
+    setSearchTimeout(
+      setTimeout(() => {
+        const searchResult = allPosts.filter(
+          (item: any) =>
+            item.name.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.prompt.toLowerCase().includes(searchText.toLowerCase())
+        )
+        setSearchedResults(searchResult)
+      }, 500)
+    )
+  }
+
   return (
     <section className="max-w-7xl mx-auto ">
       <div>
@@ -53,7 +73,16 @@ const Home = () => {
         </p>
       </div>
 
-      <div className="mt-16">{/* <FormField /> */}</div>
+      <div className="mt-16">
+        <FormField
+          labelName="Search posts"
+          type="text"
+          name="text"
+          placeholder="Search something..."
+          value={searchText}
+          handleChange={handleSearchChange}
+        />
+      </div>
 
       <div className="mt-10">
         {loading ? (
@@ -71,7 +100,10 @@ const Home = () => {
 
             <div className="grid lg:grid-cols-4 sm:grid-cols-3 xs:grid-cols-2 grid-cols-1 gap-3">
               {searchText ? (
-                <RenderCards data={allPosts} title="No search results found" />
+                <RenderCards
+                  data={searchedResults}
+                  title="No search results found"
+                />
               ) : (
                 <RenderCards data={allPosts} title="No posts found" />
               )}
